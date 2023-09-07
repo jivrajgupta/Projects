@@ -1,0 +1,50 @@
+def chisq(dataset_table):
+    chi_2=stats.chi2_contingency(dataset_table)
+    Expected_Values=chi_2[3]
+    ddof=chi_2[2]
+    print("Degree of Freedom:-",ddof)
+    alpha = 0.05
+    print("chi-square statistic:-",chi_2[0])
+    critical_value=chi2.ppf(q=1-alpha,df=ddof)
+    print('critical_value:',critical_value)
+    p_value = chi_2[1]
+    print('p-value:',p_value)
+    print('Significance level: ',alpha)
+    print('Degree of Freedom: ',ddof)
+    print('p-value:',p_value)
+    if chi_square_statistic>=critical_value and p_value<=alpha:
+        print("Reject H0,There is a relationship between 2 categorical variables")
+    else:
+        print("Retain H0,There is no relationship between 2 categorical variables")
+def cramers_corrected_stat(confusion_matrix):
+    n = confusion_matrix.sum().sum()
+    phi2 = chi_2[0]/n
+    r, k = confusion_matrix.shape
+    phi2corr = max(0, phi2 - ((k-1)*(r-1))/(n-1))    
+    rcorr = r - ((r-1)**2)/(n-1)
+    kcorr = k - ((k-1)**2)/(n-1)
+    cramers_stat = np.sqrt(phi2corr / min((kcorr-1), (rcorr-1)))
+    print('cramers statistics' , cramers_stat)
+    if (cramers_stat <= 0.2):
+        print("The result is weak. Although the result is statistically significant, the fields are only weakly associated.")
+    elif( 0.2 < cramers_stat <= 0.6):
+        print("The result is moderate. The fields are moderately associated.")
+    else:
+        print("The result is strong. The fields are strongly associated.")
+def fischer_exact(dataset_table):
+    odd_ratio, p_value = stats.fisher_exact(dataset_table, alternative='two-sided')
+    print('odd ratio is : ' + str(odd_ratio))
+    print('p_value is : ' + str(p_value))
+    if p_value<=0.05:
+        print("Reject H0,There is a relationship between 2 categorical variables")
+    else:
+        print("Retain H0,There is no relationship between 2 categorical variables")
+def kendall_tau(dataset_table):
+    from scipy.stats import kendalltau
+    coef, p = kendalltau(df['hotel'], df['is_canceled'])
+    print('Kendall correlation coefficient: %.3f' % coef)
+    alpha = 0.05
+    if p > alpha:
+        print('Samples are uncorrelated (fail to reject H0) p=%.3f' % p)
+    else:
+        print('Samples are correlated (reject H0) p=%.3f' % p)
