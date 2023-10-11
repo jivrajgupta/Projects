@@ -1,0 +1,42 @@
+# Import necessary libraries
+import pandas as pd
+from statsmodels.tsa.stattools import adfuller
+
+# Function to test stationarity of time series data
+def test_stationarity(time_series_data):
+    # Perform Augmented Dickey-Fuller test
+    result = adfuller(time_series_data)
+    
+    # Extract and print test results
+    print("Augmented Dickey-Fuller Test Results:")
+    output = pd.Series(result[0:4], index=['Test Statistic', 'P-Value', 'Lags Used', 'Number of Observations Used'])
+    for key, value in result[4].items():
+        output['Critical Value (%s)' % key] = value
+    
+    print(output)
+    
+    # Check p-value and provide interpretation
+    print("\nTest Conclusion:")
+    if result[1] <= 0.05:
+        print("Result: Data is stationary. Reject the null hypothesis.")
+    else:
+        print("Result: Data is non-stationary. Fail to reject the null hypothesis.")
+    print("\nAdditional Information:")
+    print("1. A smaller Test Statistic and large number of Lags Used suggest a more stationary series.")
+    print("2. Compare Test Statistic with Critical Values for confidence levels (1%, 5%, 10%).")
+    print("   If Test Statistic is less than Critical Value, data is stationary.")
+    print("   Critical Values provide a threshold above which the null hypothesis can be rejected.")
+    print("   Lower Critical Values indicate higher confidence in stationarity.")
+
+# Example usage
+if __name__ == "__main__":
+    # Get user input for time series data (assuming comma-separated values)
+    input_data = input("Enter your time series data (comma-separated values): ")
+    try:
+        # Convert input data to a list of floats
+        time_series_data = list(map(float, input_data.split(',')))
+        
+        # Call the function with user input data
+        test_stationarity(time_series_data)
+    except ValueError:
+        print("Error: Invalid input. Please enter comma-separated numeric values.")
