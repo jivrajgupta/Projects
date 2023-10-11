@@ -116,3 +116,81 @@ if __name__ == "__main__":
         # For example: best_model.predict(n_periods=5) for forecasting the next 5 values
     except ValueError:
         print("Error: Invalid input. Please enter comma-separated numeric values.")
+
+
+
+
+
+
+
+# Import necessary libraries
+import pandas as pd
+from pmdarima.arima import auto_arima
+from itertools import product
+
+# Function to apply SARIMA model using grid search on the given time series data
+def fit_best_sarima(time_series_data):
+    # Convert the time series data to a pandas Series (if it's not already)
+    time_series = pd.Series(time_series_data)
+    
+    # Define possible values for p, d, q (non-seasonal) and P, D, Q, s (seasonal)
+    p_values = range(0, 3)  # Example range, you can adjust these based on your data
+    d_values = range(0, 2)  # Example range, you can adjust these based on your data
+    q_values = range(0, 3)  # Example range, you can adjust these based on your data
+    P_values = range(0, 3)  # Example range, you can adjust these based on your data
+    D_values = range(0, 2)  # Example range, you can adjust these based on your data
+    Q_values = range(0, 3)  # Example range, you can adjust these based on your data
+    s_values = [12]  # Example seasonal periods, adjust as needed
+    
+    # Generate all possible combinations of parameters
+    grid = product(p_values, d_values, q_values, P_values, D_values, Q_values, s_values)
+    
+    best_model = None
+    best_aic = float("inf")  # Set initial best AIC to infinity
+    best_bic = float("inf")  # Set initial best BIC to infinity
+    
+    # Iterate through possible combinations and select the best model
+    for params in grid:
+        try:
+            # Fit SARIMA model for the current combination of parameters
+            model = auto_arima(time_series, seasonal=True, m=params[6],
+                               stepwise=True, trace=False,
+                               suppress_warnings=True, 
+                               error_action='ignore', 
+                               max_order=None,
+                               seasonal_order=(params[3], params[4], params[5], params[6]))
+            
+            # Calculate AIC and BIC for the current model
+            aic = model.aic()
+            bic = model.bic()
+            
+            # Update best model if the current model has lower AIC and BIC
+            if aic < best_aic and bic < best_bic:
+                best_aic = aic
+                best_bic = bic
+                best_model = model
+        except Exception as e:
+            continue
+    
+    # Print the summary of the best fitted model
+    print("Best SARIMA Model Summary:")
+    print(best_model.summary())
+    
+    return best_model
+
+# Example usage
+if __name__ == "__main__":
+    # Get user input for time series data (assuming comma-separated values)
+    input_data = input("Enter your time series data (comma-separated values): ")
+    try:
+        # Convert input data to a list of floats
+        time_series_data = list(map(float, input_data.split(',')))
+        
+        # Call the function with user input data
+        best_model = fit_best_sarima(time_series_data)
+        
+        # You can use the best fitted SARIMA model for making predictions, forecast, etc.
+        # For example: best_model.predict(n_periods=5) for forecasting the next 5 values
+    except ValueError:
+        print("Error: Invalid input. Please enter comma-separated numeric values.")
+
