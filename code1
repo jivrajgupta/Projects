@@ -292,3 +292,59 @@ if __name__ == "__main__":
             print("No significant p-value found. Data might not be stationary even with differencing.")
     except ValueError:
         print("Error: Invalid input. Please enter comma-separated numeric values.")
+
+
+
+
+
+
+
+
+
+
+
+# Import necessary libraries
+import pandas as pd
+import numpy as np
+from pmdarima.arima import auto_arima
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+
+# Function to perform AutoARIMA modeling, train-test split, and calculate RMSE
+def auto_arima_train_test(time_series_data, train_end_date, test_start_date):
+    # Convert the time series data to a pandas DataFrame
+    df = pd.DataFrame({'Date': pd.date_range(start='2010-01-01', periods=len(time_series_data), freq='M'),
+                       'Value': time_series_data})
+    
+    # Split the data into train and test sets based on user-defined dates
+    train_data = df[df['Date'] <= train_end_date]['Value']
+    test_data = df[(df['Date'] >= test_start_date) & (df['Date'] <= df['Date'].max())]['Value']
+    
+    # Perform AutoARIMA modeling
+    model = auto_arima(train_data, seasonal=True, stepwise=True, suppress_warnings=True)
+    
+    # Make predictions for the test set
+    predictions = model.predict(n_periods=len(test_data))
+    
+    # Calculate RMSE
+    rmse = sqrt(mean_squared_error(test_data, predictions))
+    
+    # Return predictions and RMSE
+    return predictions, rmse
+
+# Example usage with user-defined train and test end dates
+if __name__ == "__main__":
+    # Example time series data (replace this with your own data)
+    time_series_data = [100, 110, 120, 115, 105, 95, 85, 90, 100, 110, 120, 125, 130, 140, 150, 160, 170, 180, 185, 190]
+    
+    # Get user input for train end date and test start date
+    train_end_date = input("Enter the training end date (YYYY-MM): ")
+    test_start_date = input("Enter the testing start date (YYYY-MM): ")
+    
+    # Call the function with the example time series data and user-defined dates
+    predictions, rmse = auto_arima_train_test(time_series_data, train_end_date, test_start_date)
+    
+    # Print predictions and RMSE
+    print("Predictions for the test set:", predictions)
+    print("Root Mean Square Error (RMSE) on test values:", rmse)
+
