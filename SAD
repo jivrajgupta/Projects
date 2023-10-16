@@ -1,0 +1,35 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+from statsmodels.tsa.holtwinters import ExponentialSmoothing
+
+# Load your univariate time series data here or replace this with your data loading logic
+# For example, you can load data from a CSV file using pd.read_csv('your_data.csv')
+# Replace 'your_data.csv' with your actual data file path.
+
+# Example data loading:
+# data = pd.read_csv('your_data.csv', header=None, names=['value_column'])
+
+# Generate a sample univariate time series for demonstration
+# For demonstration purposes, we'll use a simple example with random data
+import numpy as np
+np.random.seed(0)
+data = np.random.normal(loc=0, scale=1, size=100)
+
+# Apply exponential smoothing
+# You can adjust the smoothing parameters (trend, seasonal, etc.) as needed for your data
+model = ExponentialSmoothing(data, trend='add', seasonal='add', seasonal_periods=12)
+result = model.fit()
+
+# Forecast future data points (for example, forecasting 10 future points)
+forecast_steps = 10
+forecast = result.forecast(steps=forecast_steps)
+
+# Plot the original time series and the forecasted values
+plt.figure(figsize=(12, 6))
+plt.plot(data, label='Original Time Series')
+plt.plot(range(len(data), len(data) + forecast_steps), forecast, label='Exponential Smoothing Forecast', linestyle='dashed')
+plt.xlabel('Time')
+plt.ylabel('Value')
+plt.title('Exponential Smoothing Forecast')
+plt.legend()
+plt.show()
