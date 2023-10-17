@@ -1,0 +1,25 @@
+import numpy as np
+from pykalman import KalmanFilter
+def percentile_capping_and_kalman_filter(time_series, lower_percentile=5, upper_percentile=95):
+    # Percentile capping
+    lower_limit = np.percentile(time_series, lower_percentile)
+    upper_limit = np.percentile(time_series, upper_percentile)
+    capped_series = np.clip(time_series, lower_limit, upper_limit)
+    
+    # Kalman filtering
+    kf = KalmanFilter(initial_state_mean=capped_series[0], n_dim_obs=1)
+    kalman_filtered, _ = kf.filter(capped_series)
+    
+    return kalman_filtered
+
+# Example usage
+if __name__ == "__main__":
+    # Example univariate time series
+    univariate_series = np.array([10, 15, 200, 12, 8, 300, 18, 25, 30, 280])
+    
+    # Applying percentile capping and Kalman filtering
+    processed_series = percentile_capping_and_kalman_filter(univariate_series)
+    
+    # Output the processed series
+    print("Original Series:", univariate_series)
+    print("Processed Series:", processed_series)
