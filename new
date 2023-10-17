@@ -1,0 +1,25 @@
+import pandas as pd
+import numpy as np
+from statsmodels.tsa.arima.model import ARIMA
+import statsmodels.api as sm
+from pmdarima.arima import auto_arima
+from tbats import TBATS
+from sklearn.metrics import mean_squared_error
+from math import sqrt
+import pandas as pd
+date_rng = pd.date_range(start='2023-01-01', end='2023-09-30', freq='D')
+sample_data = pd.Series(range(len(date_rng)), index=date_rng)
+def evaluate_time_series_model(model, time_series, model_name=None, **kwargs):
+    model_instance = model(endog = time_series, **kwargs)
+    model_result = model_instance.fit()
+    forecast = model_result.forecast(steps=len(time_series))
+    #forecast_series = pd.Series(forecast, index=time_series.index)
+    rmse = sqrt(mean_squared_error(time_series, forecast))
+    return model_name, rmse, forecast
+models = [(ARIMA, {"order": (1,0,1)}),(ARIMA, {"order": (1,0,2)}),(ARIMA, {"order": (1,0,1)})]
+results_df = pd.DataFrame(columns=["Model", "RMSE", "Forecast"])
+for model, params in models:
+    model_name = model.__name__
+    model_name, rmse, forecast = evaluate_time_series_model(model, sample_data, model_name=model_name, **params)
+    results_df = results_df.append({"Model": model_name, "RMSE": rmse, "Forecast": forecast}, ignore_index=True)
+print(results_df)
