@@ -1,0 +1,49 @@
+import pandas as pd
+
+# Sample data (salesperson, win ratio, number of projects)
+data = {
+    'Salesperson': ['A', 'B', 'C', 'D'],
+    'WinRatio': [0.75, 0.85, 0.65, 0.70],
+    'NumProjects': [500, 1200, 300, 800]
+}
+
+df = pd.DataFrame(data)
+
+# Define weights (adjust these based on importance)
+win_ratio_weight = 0.7
+num_projects_weight = 0.3
+
+# Calculate weighted scores
+df['WeightedWinRatio'] = df['WinRatio'] * win_ratio_weight
+df['WeightedNumProjects'] = df['NumProjects'] * num_projects_weight
+
+# Calculate overall effectiveness score
+df['OverallScore'] = df['WeightedWinRatio'] + df['WeightedNumProjects']
+
+# Optional: Normalize the scores to a 0-1 scale
+df['NormalizedScore'] = (df['OverallScore'] - df['OverallScore'].min()) / (df['OverallScore'].max() - df['OverallScore'].min())
+
+# Rank salespeople based on the overall score (or normalized score)
+ranked_salespeople = df.sort_values(by='OverallScore', ascending=False)
+
+print(ranked_salespeople)
+
+from scipy.optimize import minimize
+
+# Objective function to be optimized
+def objective_function(weights):
+    # Calculate the overall score based on weights
+    overall_score = weights[0] * df['WinRatio'] + weights[1] * df['NumProjects']
+    # Minimize negative overall score as we want to maximize the performance
+    return -overall_score.sum()
+
+# Initial guess for weights
+initial_weights = [0.5, 0.5]  # Initial equal weights
+
+# Optimization constraints (optional, if any)
+constraints = ({'type': 'eq', 'fun': lambda weights: weights.sum() - 1})  # Constraint: Weights must sum up to 1
+
+# Optimize the objective function
+optimized_weights = minimize(objective_function, initial_weights, constraints=constraints)
+
+print("Optimized Weights: ", optimized_weights.x)
