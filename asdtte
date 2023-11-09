@@ -66,3 +66,64 @@ def t_test(df, column_name, one_sample=None, two_sample=None, random_samples=Non
 # and random_samples is a list of different random samples of the same dataset (each sample as a pd.Series)
 # result = t_test(df, 'column_name', one_sample=5, two_sample='other_column_name', random_samples=[sample1, sample2, sample3])
 # print(result)
+
+
+
+
+
+
+
+import scipy.stats as stats
+import matplotlib.pyplot as plt
+import numpy as np
+
+def test_normality(data):
+    """
+    Test the normality of the data using Shapiro-Wilk, Kolmogorov-Smirnov,
+    D'Agostino's, and Anderson-Darling tests. Generate Q-Q plot and P-P plot.
+    
+    Args:
+        data (array-like): Input data to be tested for normality.
+    
+    Returns:
+        dict: Dictionary containing test results and plots.
+    """
+    # Perform normality tests
+    shapiro_stat, shapiro_p_value = stats.shapiro(data)
+    ks_stat, ks_p_value = stats.kstest(data, 'norm')
+    dagostino_stat, dagostino_p_value = stats.normaltest(data)
+    anderson_stat = stats.anderson(data, dist='norm')
+    
+    # Generate Q-Q plot
+    plt.figure(figsize=(12, 4))
+    plt.subplot(1, 2, 1)
+    stats.probplot(data, dist="norm", plot=plt)
+    plt.title('Q-Q Plot')
+    
+    # Generate P-P plot
+    plt.subplot(1, 2, 2)
+    sorted_data = np.sort(data)
+    probabilities = np.arange(1, len(sorted_data) + 1) / (len(sorted_data) + 1)
+    expected_quantiles = stats.norm.ppf(probabilities)
+    plt.plot(expected_quantiles, sorted_data, marker='o', linestyle='None')
+    plt.title('P-P Plot')
+    plt.xlabel('Theoretical Quantiles')
+    plt.ylabel('Ordered Values')
+    
+    plt.tight_layout()
+    plt.show()
+    
+    # Prepare results
+    results = {
+        'Shapiro-Wilk Test': {'Statistic': shapiro_stat, 'p-value': shapiro_p_value},
+        'Kolmogorov-Smirnov Test': {'Statistic': ks_stat, 'p-value': ks_p_value},
+        'D\'Agostino\'s Test': {'Statistic': dagostino_stat, 'p-value': dagostino_p_value},
+        'Anderson-Darling Test': {'Statistic': anderson_stat.statistic, 'Critical Values': anderson_stat.critical_values}
+    }
+    
+    return results
+
+# Example usage:
+# Assuming data is your array-like input data to be tested for normality
+# results = test_normality(data)
+# print(results)
