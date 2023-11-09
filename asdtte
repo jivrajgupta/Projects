@@ -1,0 +1,68 @@
+import scipy.stats as stats
+import numpy as np
+
+def t_test(df, column_name, one_sample=None, two_sample=None, random_samples=None):
+    """
+    Perform one-sample and two-sample T-tests on the specified column of the dataframe
+    after checking the assumptions of normality, homogeneity of variances, and different random samples.
+    
+    Args:
+        df (pd.DataFrame): Input dataframe.
+        column_name (str): Name of the column on which T-tests will be performed.
+        one_sample (float): Value for one-sample T-test. If provided, function performs one-sample T-test.
+        two_sample (str): Name of the second column for two-sample T-test. If provided, function performs two-sample T-test.
+        random_samples (list of pd.Series): List of different random samples of the same dataset.
+    
+    Returns:
+        dict: Dictionary containing T-test results if assumptions are met, otherwise an error message.
+    """
+    try:
+        # Check normality using three different tests
+        _, shapiro_p_value = stats.shapiro(df[column_name])
+        _, ks_p_value = stats.kstest(df[column_name], 'norm')
+        _, dagostino_p_value = stats.normaltest(df[column_name])
+        
+        # Check homogeneity of variances using Levene's test
+        _, homogeneity_p_value = stats.levene(df[column_name], df[two_sample])
+        
+        # Check if random samples are different samples from the same dataset
+        if random_samples and all(isinstance(sample, pd.Series) for sample in random_samples):
+            random_samples_means = [sample.mean() for sample in random_samples]
+            unique_means = len(set(random_samples_means))
+            if unique_means == len(random_samples_means):
+                random_samples_variances = [sample.var() for sample in random_samples]
+                unique_variances = len(set(random_samples_variances))
+                if unique_variances == len(random_samples_variances):
+                    if shapiro_p_value > 0.05 and ks_p_value > 0.05 and dagostino_p_value > 0.05 and homogeneity_p_value > 0.05:
+                        results = {}
+                        
+                        # One-sample T-test
+                        if one_sample is not None:
+                            t_stat, p_value = stats.ttest_1samp(df[column_name], one_sample)
+                            results['one_sample_t_test'] = {'t_statistic': t_stat, 'p_value': p_value}
+                        
+                        # Two-sample T-test
+                        if two_sample is not None:
+                            t_stat, p_value = stats.ttest_ind(df[column_name], df[two_sample])
+                            results['two_sample_t_test'] = {'t_statistic': t_stat, 'p_value': p_value}
+                        
+                        return results
+                    
+                    else:
+                        return "Assumptions are not met. Shapiro-Wilk p-value: {}, Kolmogorov-Smirnov p-value: {}, D'Agostino and Pearson p-value: {}, Homogeneity test p-value: {}".format(shapiro_p_value, ks_p_value, dagostino_p_value, homogeneity_p_value)
+                else:
+                    return "Random samples have different variances."
+            else:
+                return "Random samples have different means."
+        else:
+            return "Invalid random samples provided."
+    
+    except Exception as e:
+        return str(e)
+
+# Example usage:
+# Assuming df is your dataframe, column_name is the column you want to perform T-test on,
+# one_sample is the value for one-sample T-test, two_sample is the name of the second column for two-sample T-test,
+# and random_samples is a list of different random samples of the same dataset (each sample as a pd.Series)
+# result = t_test(df, 'column_name', one_sample=5, two_sample='other_column_name', random_samples=[sample1, sample2, sample3])
+# print(result)
