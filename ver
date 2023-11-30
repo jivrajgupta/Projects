@@ -1,0 +1,62 @@
+import pandas as pd
+import os 
+from datetime import datetime
+pd.set_option('display.max_columns', 100)
+pd.set_option('display.max_rows', 500)
+pd.set_option('display.float_format', lambda x: '%.3f' % x)
+from scipy.stats import kendalltau
+import logging
+from scipy.stats import ttest_ind
+import numpy as np
+import datetime as dt
+from scipy import stats
+from scipy.stats import chi2
+from sklearn.preprocessing import OneHotEncoder
+import itertools
+import seaborn as sns
+import yaml
+import matplotlib.pyplot as plt
+import pandas as pd
+import re
+from datetime import datetime
+import xgboost as xgb
+from scipy.stats import kendalltau
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
+from sklearn import metrics
+from itertools import *
+import seaborn as sns
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.metrics import classification_report
+from sklearn.metrics import accuracy_score
+from sklearn.metrics import confusion_matrix
+import mlflow
+import missingno
+from Dataset_prep_utilities import *
+cd = os.getcwd()
+raw_data_path = os.path.join(cd,r"datasets\raw_dataset")
+dataset_info_path = os.path.join(cd,r"datasets\dataset_info")
+train_data_path = os.path.join(cd,r"datasets\train_dataset")
+test_data_path = os.path.join(cd,r"datasets\test_dataset")
+config_file_path = os.path.join(cd,r"config")
+logging_file_path = os.path.join(cd,r"logs")
+result_path = os.path.join(cd,r"datasets\results")
+path_list = [raw_data_path,train_data_path,test_data_path,logging_file_path,result_path,dataset_info_path]
+for mypath in path_list: 
+    if not os.path.isdir(mypath):
+        os.makedirs(mypath,exist_ok = True)
+with open('example.yml', 'r') as f:
+    config = yaml.safe_load(f)
+logging.basicConfig(filename='log_file2.log',
+                    level=logging.DEBUG,
+                    format='%(levelname)s - %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')    
+versioned_folder_result_path = make_versioned_folder(result_path)
+versioned_folder_dataset_info_path = make_versioned_folder(dataset_info_path)
+df = pd.read_csv(os.path.join(raw_data_path,r"data.csv"))
