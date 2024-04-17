@@ -1,0 +1,29 @@
+import pandas as pd
+from fuzzywuzzy import fuzz
+
+# Sample DataFrame
+data = {
+    'Text': ['apple pie', 'apple', 'orange', 'apple pi', 'banana'],
+    'ID': [1, 2, 3, 4, 5]
+}
+df = pd.DataFrame(data)
+
+# Function to find near-duplicate text using Levenshtein distance
+def find_near_duplicates(df, threshold=80):
+    near_duplicates = []
+    for i, row1 in df.iterrows():
+        for j, row2 in df.iterrows():
+            if i != j:
+                similarity = fuzz.ratio(row1['Text'], row2['Text'])
+                if similarity >= threshold:
+                    near_duplicates.append((row1['ID'], row2['ID'], similarity))
+    return near_duplicates
+
+# Find near-duplicate text
+threshold = 80  # Adjust threshold as needed
+near_duplicates = find_near_duplicates(df, threshold)
+
+# Display near-duplicates
+print("Near-duplicate text pairs:")
+for pair in near_duplicates:
+    print("IDs:", pair[0], "-", pair[1], "Similarity:", pair[2])
